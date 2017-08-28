@@ -1,0 +1,1 @@
+Mineral	Fe	Zn	aMagnetite	3	0	8.397Franklinite	2.024	0.976	8.4418Franklinite	2	1	8.4412Franklinite	1.92	1.08	8.443
