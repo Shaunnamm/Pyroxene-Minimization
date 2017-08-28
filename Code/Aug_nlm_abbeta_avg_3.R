@@ -2,6 +2,8 @@
 # Augite Minimization.2017 #
 ############################
 
+#HI
+
 #Read in the earth augite dataset
 aug=read.csv("/Users/smmorrison/Desktop/R/CheMin/Aug_8.2017_avg.csv")
 plot(Mg ~ b, data=aug)
