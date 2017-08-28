@@ -1,1 +1,0 @@
-Mineral	Al	Fe	aMagnetite	0	3	8.397Hercynite	1.897	1.103	8.1646Hercynite	2	1	8.1557

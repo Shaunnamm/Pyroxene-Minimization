@@ -1,1 +1,0 @@
-Mineral	Fe	Mg	aUlvospinel	1.929	0.135	8.5271Ulvospinel	1.768	0.29	8.5184Ulvospinel	1.511	0.531	8.5104Ulvospinel	1.228	0.79	8.5021Ulvospinel	1.106	0.918	8.4946

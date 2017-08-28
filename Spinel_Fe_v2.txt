@@ -1,1 +1,0 @@
-Mineral	Fe	aMaghemite	2.667	8.33Magnetite	2.75	8.3583Magnetite	2.84	8.3799multi	2.83	8.38195multi	2.85	8.3849multi	3	8.395642857

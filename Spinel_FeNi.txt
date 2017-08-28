@@ -1,1 +1,0 @@
-Mineral	Fe	Ni	aMagnetite	3	0	8.397Magnetite	2.51	0.48	8.368Trevorite	2.42	0.52	8.3626Trevorite	1.964	0.963	8.339
