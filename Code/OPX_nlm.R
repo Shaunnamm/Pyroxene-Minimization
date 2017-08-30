@@ -3,7 +3,7 @@
 #########################
 
 #Read in earth opx dataset
-opx=read.csv("/Users/smmorrison/Desktop/R/CheMin/opx_8.2017_avg.csv")
+opx=read.csv("/Users/smmorrison/Desktop/R/CheMin/Data/opx_8.2017_avg.csv")
 
 #Run linear models to compute starting parameters for non-linear modeling
 lm_a <- lm(a ~ Mg + Ca + I(Mg^2) + I(Ca^2), data = opx)
@@ -28,6 +28,7 @@ nls_b <- nls (b ~ c0 + c1*Mg + c2*I(Mg^2),
                            c2 = summary(lm_b)$coefficients[3,1]), 
   control = nls.control(warnOnly = T))
 summary(nls_b)
+
 
 #save nls coefficients
 {
@@ -70,7 +71,7 @@ weight_a <- a_calc/b_calc
 Mg_calc<-c()
 Ca_calc<-c()
 sum_sq_error <- c()
-opx_all=read.csv("/Users/smmorrison/Desktop/R/CheMin/opx_8.2017_all.csv")
+opx_all=read.csv("/Users/smmorrison/Desktop/R/CheMin/Data/opx_8.2017_all.csv")
 for (i in 1:nrow(opx_all)) {
   f <- function(par) { 
     (((((opx_all$a[i]-(c0_a+c1_a*par[1]+c2_a*par[2]+c3_a*par[1]^2+c4_a*par[2]^2)))/((c0_a+c1_a*par[1]+c2_a*par[2]+c3_a*par[1]^2+c4_a*par[2]^2)/(c0_b+c1_b*par[1]+c2_b*par[1]^2)))^2) 
@@ -106,7 +107,7 @@ RMSE_Mg
 ##########################################################################################
 
 #Calculate chemistry for your dataset (Mars, in our case)
-mars_opx=read.csv("/Users/smmorrison/Desktop/R/CheMin/mars_opx.csv")
+mars_opx=read.csv("/Users/smmorrison/Desktop/R/CheMin/Data/Mars/mars_opx.csv")
 
 # par[1] = Mg
 # par[2] = Ca
@@ -150,3 +151,50 @@ RMSE_mars_b <- sqrt(mean(mars_b_calc_ResSq))
 
 RMSE_mars_a
 RMSE_mars_b
+
+###########################################################################################
+#Cross-validation for a
+ratio <- 0.80 #Training on 80% of data
+mse_a <- c()
+
+for (i in 1:1000) {
+  train.ind <- sample(1:nrow(opx),nrow(opx)*ratio)
+  
+  train <- opx[train.ind,]
+  test <- opx[-train.ind,]
+  
+  lm_opx_a_train =lm(a ~ Mg + Ca + I(Mg^2) + I(Ca^2), data = train)
+  
+  predicted <- predict(lm_opx_a_train,test)
+  
+  mse_a <- c(mse_a,mean((predicted-test$a)^2))
+  
+}
+
+#average rmse over all runs
+rmse_a_test <- sqrt(mean(mse_a))
+rmse_a_test
+
+#Cross-validation for b
+mse_b <- c()
+
+for (i in 1:1000) {
+  train.ind <- sample(1:nrow(opx),nrow(opx)*ratio)
+  
+  train <- opx[train.ind,]
+  test <- opx[-train.ind,]
+  
+  lm_opx_b_train =lm(b ~ Mg + I(Mg^2), data = train)
+  
+  predicted <- predict(lm_opx_b_train,test)
+  
+  mse_b <- c(mse_b,mean((predicted-test$b)^2))
+  
+}
+
+#average rmse over all runs
+rmse_b_test <- sqrt(mean(mse_b))
+rmse_b_test
+#End cross-validation
+################################################################################
+

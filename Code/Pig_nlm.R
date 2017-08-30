@@ -1,9 +1,10 @@
-############################
-# pigite Minimization.2017 #
-############################
+##########################
+# Pigeonite Minimization #
+#  S.M. Morrison 2017    #
+##########################
 
 #Read in the earth pigite dataset
-pig=read.csv("/Users/smmorrison/Desktop/R/CheMin/pig_8.2017_all.csv")
+pig=read.csv("/Users/smmorrison/Desktop/R/CheMin/Data/pig_8.2017_avg.csv")
 
 #Run linear models to compute starting parameters for non-linear modeling
 lm_a <- lm(a ~ Mg + Ca + I(Ca^2) + I(Mg*Ca) + I(Mg^2*Ca), data = pig)
@@ -105,7 +106,7 @@ weight_b <- b_calc/beta_calc
 Mg_calc<-c()
 Ca_calc<-c()
 sum_sq_error <- c()
-pig_all=read.csv("/Users/smmorrison/Desktop/R/CheMin/pig_8.2017_all.csv")
+pig_all=read.csv("/Users/smmorrison/Desktop/R/CheMin/Data/pig_8.2017_all.csv")
 for (i in 1:nrow(pig_all)) {
 f <- function(par) { 
   (((pig_all$a[i]-(c0_a+c1_a*par[1]+c2_a*par[2]+c3_a*par[2]^2+c4_a*par[1]*par[2]+c5_a*par[1]^2*par[2]))
@@ -145,7 +146,7 @@ RMSE_Mg
 ##########################################################################################
 
 #Calculate chemistry for your dataset (Mars, in our case)
-mars_pig=read.delim("/Users/smmorrison/Desktop/R/CheMin/mars_pig.txt")
+mars_pig=read.delim("/Users/smmorrison/Desktop/R/CheMin/Data/Mars/mars_pig.txt")
 
 # par[1] = Mg
 # par[2] = Ca
@@ -197,3 +198,70 @@ RMSE_mars_beta <- sqrt(mean(mars_beta_calc_ResSq))
 RMSE_mars_a
 RMSE_mars_b
 RMSE_mars_beta
+
+###########################################################################################
+#Cross-validation for a
+ratio <- 0.80 #Training on 80% of data
+mse_a <- c()
+
+for (i in 1:1000) {
+  train.ind <- sample(1:nrow(pig),nrow(pig)*ratio)
+  
+  train <- pig[train.ind,]
+  test <- pig[-train.ind,]
+  
+  lm_pig_a_train =lm(a ~ Mg + Ca + I(Ca^2) + I(Mg*Ca) + I(Mg^2*Ca), data = train)
+  
+  predicted <- predict(lm_pig_a_train,test)
+  
+  mse_a <- c(mse_a,mean((predicted-test$a)^2))
+}
+
+#average rmse over all runs
+rmse_a_test <- sqrt(mean(mse_a))
+rmse_a_test
+
+#Cross-validation for b
+mse_b <- c()
+
+for (i in 1:1000) {
+  train.ind <- sample(1:nrow(pig),nrow(pig)*ratio)
+  
+  train <- pig[train.ind,]
+  test <- pig[-train.ind,]
+  
+  lm_pig_b_train =lm(b ~ Mg + I(Mg^2) + I(Ca^2) + I(Mg^2*Ca), data = train)
+  
+  predicted <- predict(lm_pig_b_train,test)
+  
+  mse_b <- c(mse_b,mean((predicted-test$b)^2))
+  
+}
+
+#average rmse over all runs
+rmse_b_test <- sqrt(mean(mse_b))
+rmse_b_test
+
+#Cross-validation for beta
+mse_beta <- c()
+
+for (i in 1:1000) {
+  train.ind <- sample(1:nrow(pig),nrow(pig)*ratio)
+  
+  train <- pig[train.ind,]
+  test <- pig[-train.ind,]
+  
+  lm_pig_beta_train =lm(beta ~ Mg + Ca + I(Mg^2) + I(Mg*Ca) + I(Mg^3) + I(Mg^2*Ca) + I(Mg*Ca^2), data = train)
+  
+  predicted <- predict(lm_pig_beta_train,test)
+  
+  mse_beta <- c(mse_beta,mean((predicted-test$beta)^2))
+  
+}
+
+#average rmse over all runs
+rmse_beta_test <- sqrt(mean(mse_beta))
+rmse_beta_test
+
+#End cross-validation
+################################################################################

@@ -4,7 +4,7 @@
 #######################
 
 #Read in the earth augite dataset (uc params of minerals with identical compositions averaged to avoid weighting)
-aug=read.csv("/Users/smmorrison/Desktop/R/CheMin/Aug_8.2017_avg.csv")
+aug=read.csv("/Users/smmorrison/Desktop/R/CheMin/Data/Aug_8.2017_avg.csv")
 
 #Run linear models to compute starting parameters for non-linear modeling
 lm_a <- lm(a ~ Mg + Ca + I(Mg^2) + I(Mg*Ca) + I(Ca^3) + I(Mg*Ca^2), data = aug)
@@ -24,6 +24,7 @@ nls_a <- nls (a ~ c0 + c1*Mg + c2*Ca + c3*I(Mg^2) + c4*I(Mg*Ca) + c5*I(Ca^3) + c
                                c5 = summary(lm_a)$coefficients[6,1],
                                c6 = summary(lm_a)$coefficients[7,1]), 
       control = nls.control(warnOnly = T))
+summary(nls_a)
 nls_b <- nls (b ~ c0 + c1*Mg + c2*Ca + c3*I(Mg^2) + c4*I(Ca^2) + c5*I(Mg*Ca) + c6*I(Mg*Ca^2), 
       data = aug, start = list(c0 = summary(lm_b)$coefficients[1,1], 
                                c1 = summary(lm_b)$coefficients[2,1], 
@@ -33,6 +34,7 @@ nls_b <- nls (b ~ c0 + c1*Mg + c2*Ca + c3*I(Mg^2) + c4*I(Ca^2) + c5*I(Mg*Ca) + c
                                c5 = summary(lm_b)$coefficients[6,1],
                                c6 = summary(lm_b)$coefficients[7,1]), 
       control = nls.control(warnOnly = T))
+summary(nls_b)
 nls_beta <- nls (beta ~ c0 + c1*Mg + c2*I(Mg^2) + c3*I(Ca^2) + c4*I(Mg*Ca) + c5*I(Mg^3) + c6*I(Ca^3) + c7*I(Mg^2*Ca) + c8*I(Mg*Ca^2), 
       data = aug, start = list(c0 = summary(lm_beta)$coefficients[1,1], 
                                c1 = summary(lm_beta)$coefficients[2,1], 
@@ -44,6 +46,7 @@ nls_beta <- nls (beta ~ c0 + c1*Mg + c2*I(Mg^2) + c3*I(Ca^2) + c4*I(Mg*Ca) + c5*
                                c7 = summary(lm_beta)$coefficients[8,1],
                                c8 = summary(lm_beta)$coefficients[9,1]), 
       control = nls.control(warnOnly = T))
+summary(nls_beta)
 
 #Storing nls coefficients 
 {
@@ -111,7 +114,7 @@ weight_b <- b_calc/beta_calc
 Mg_calc<-c()
 Ca_calc<-c()
 sum_sq_error <- c()
-aug_all=read.csv("/Users/smmorrison/Desktop/R/CheMin/Aug_8.2017_all.csv")
+aug_all=read.csv("/Users/smmorrison/Desktop/R/CheMin/Data/Aug_8.2017_all.csv")
 for (i in 1:nrow(aug_all)) {
 f <- function(par) { 
   (((aug_all$a[i]-(c0_a+c1_a*par[1]+c2_a*par[2]+c3_a*par[1]^2+c4_a*par[1]*par[2]+c5_a*par[2]^3+c6_a*par[1]*par[2]^2))
@@ -150,7 +153,7 @@ RMSE_Mg
 ##########################################################################################
 
 #Calculate chemistry for your dataset (Mars, in our case)
-mars_aug=read.delim("/Users/smmorrison/Desktop/R/CheMin/mars_aug_2.txt")
+mars_aug=read.delim("/Users/smmorrison/Desktop/R/CheMin/Data/Mars/mars_aug_2.txt")
 
 # par[1] = Mg
 # par[2] = Ca
@@ -203,3 +206,70 @@ RMSE_mars_beta <- sqrt(mean(mars_beta_calc_ResSq))
 RMSE_mars_a
 RMSE_mars_b
 RMSE_mars_beta
+
+###########################################################################################
+#Cross-validation for a
+ratio <- 0.80 #Training on 80% of data
+mse_a <- c()
+
+for (i in 1:1000) {
+  train.ind <- sample(1:nrow(aug),nrow(aug)*ratio)
+  
+  train <- aug[train.ind,]
+  test <- aug[-train.ind,]
+  
+  lm_aug_a_train =lm(a ~ Mg + Ca + I(Mg^2) + I(Mg*Ca) + I(Ca^3) + I(Mg*Ca^2), data = train)
+  
+  predicted <- predict(lm_aug_a_train,test)
+  
+  mse_a <- c(mse_a,mean((predicted-test$a)^2))
+}
+
+#average rmse over all runs
+rmse_a_test <- sqrt(mean(mse_a))
+rmse_a_test
+
+#Cross-validation for b
+mse_b <- c()
+
+for (i in 1:1000) {
+  train.ind <- sample(1:nrow(aug),nrow(aug)*ratio)
+  
+  train <- aug[train.ind,]
+  test <- aug[-train.ind,]
+  
+  lm_aug_b_train =lm(b ~ Mg + Ca + I(Mg^2) + I(Ca^2) + I(Mg*Ca) + I(Mg*Ca^2), data = train)
+  
+  predicted <- predict(lm_aug_b_train,test)
+  
+  mse_b <- c(mse_b,mean((predicted-test$b)^2))
+  
+}
+
+#average rmse over all runs
+rmse_b_test <- sqrt(mean(mse_b))
+rmse_b_test
+
+#Cross-validation for beta
+mse_beta <- c()
+
+for (i in 1:1000) {
+  train.ind <- sample(1:nrow(aug),nrow(aug)*ratio)
+  
+  train <- aug[train.ind,]
+  test <- aug[-train.ind,]
+  
+  lm_aug_beta_train =lm(beta ~ Mg + I(Mg^2) + I(Ca^2) + I(Mg*Ca) + I(Mg^3) + I(Ca^3) + I(Mg^2*Ca) + I(Mg*Ca^2), data = train)
+  
+  predicted <- predict(lm_aug_beta_train,test)
+  
+  mse_beta <- c(mse_beta,mean((predicted-test$beta)^2))
+  
+}
+
+#average rmse over all runs
+rmse_beta_test <- sqrt(mean(mse_beta))
+rmse_beta_test
+
+#End cross-validation
+################################################################################
