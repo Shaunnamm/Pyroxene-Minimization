@@ -70,6 +70,8 @@ weight_a <- a_calc/b_calc
   # par[2] = Ca
 Mg_calc<-c()
 Ca_calc<-c()
+a_calc_all <- c()
+b_calc_all <- c()
 sum_sq_error <- c()
 opx_all=read.csv("/Users/smmorrison/Desktop/R/CheMin/Data/opx_8.2017_all.csv")
 for (i in 1:nrow(opx_all)) {
@@ -84,8 +86,24 @@ for (i in 1:nrow(opx_all)) {
   Ca_calc <- append(Ca_calc,min$par[2])
   Fe_calc <- (2-Mg_calc-Ca_calc)
   sum_sq_error <- append(sum_sq_error,min$objective)
-  
+  a_calc_all <- append(a_calc_all, (c0_a+c1_a*min$par[1]+c2_a*min$par[2]+c3_a*min$par[1]^2+c4_a*min$par[2]^2))
+  b_calc_all <- append(b_calc_all, (c0_b+c1_b*min$par[1]+c2_b*min$par[1]^2))
 }
+
+opx_all$a_calc_all = a_calc_all
+opx_all$b_calc_all = b_calc_all
+
+a_calc_all_ResSq <- (a_calc_all-opx_all$a)^2
+b_calc_all_ResSq <- (b_calc_all-opx_all$b)^2
+
+opx_all$a_calc_all_ResSq <- a_calc_all_ResSq
+opx_all$b_calc_all_ResSq <- b_calc_all_ResSq
+
+RMSE_a <- sqrt(mean(a_calc_all_ResSq))
+RMSE_b <- sqrt(mean(b_calc_all_ResSq))
+
+RMSE_a
+RMSE_b
 
 #Computing RMSE of calculated composition
 opx_all$Mg_calc = Mg_calc

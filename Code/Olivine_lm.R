@@ -99,3 +99,4 @@ mars_oliv=read.delim("/Users/smmorrison/Desktop/R/CheMin/Data/Mars/mars_oliv.txt
 mars_oliv$Mg_calc <- c(predict(lm_oliv_Mg, newdata = mars_oliv))
 mars_oliv$Fe_calc <- c(predict(lm_oliv_Fe, newdata = mars_oliv))
 mars_oliv$sum <- mars_oliv$Mg_calc+mars_oliv$Fe_calc
+

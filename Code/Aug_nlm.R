@@ -114,6 +114,9 @@ weight_b <- b_calc/beta_calc
 Mg_calc<-c()
 Ca_calc<-c()
 sum_sq_error <- c()
+a_calc_all <- c()
+b_calc_all <- c()
+beta_calc_all <- c()
 aug_all=read.csv("/Users/smmorrison/Desktop/R/CheMin/Data/Aug_8.2017_all.csv")
 for (i in 1:nrow(aug_all)) {
 f <- function(par) { 
@@ -130,8 +133,30 @@ Mg_calc <- append(Mg_calc,min$par[1])
 Ca_calc <- append(Ca_calc,min$par[2])
 Fe_calc <- (2-Mg_calc-Ca_calc)
 sum_sq_error <- append(sum_sq_error,min$objective)
+a_calc_all <- append(a_calc_all, (c0_a+c1_a*min$par[1]+c2_a*min$par[2]+c3_a*min$par[1]^2+c4_a*min$par[1]*min$par[2]+c5_a*min$par[2]^3+c6_a*min$par[1]*min$par[2]^2))
+b_calc_all <- append(b_calc_all, (c0_b+c1_b*min$par[1]+c2_b*min$par[2]+c3_b*min$par[1]^2+c4_b*min$par[2]^2+c5_b*min$par[1]*min$par[2]+c6_b*min$par[1]*min$par[2]^2))
+beta_calc_all <- append(beta_calc_all, (c0_beta+c1_beta*min$par[1]+c2_beta*min$par[1]^2+c3_beta*min$par[2]^2+c4_beta*min$par[1]*min$par[2]+c5_beta*min$par[1]^3+c6_beta*min$par[2]^3+c7_beta*min$par[1]^2*min$par[2]+c8_beta*min$par[1]*min$par[2]^2))
 
 }
+aug_all$a_calc_all = a_calc_all
+aug_all$b_calc_all = b_calc_all
+aug_all$beta_calc_all = beta_calc_all
+
+a_calc_all_ResSq <- (a_calc_all-aug_all$a)^2
+b_calc_all_ResSq <- (b_calc_all-aug_all$b)^2
+beta_calc_all_ResSq <- (beta_calc_all-aug_all$beta)^2
+
+aug_all$a_calc_all_ResSq <- a_calc_all_ResSq
+aug_all$b_calc_all_ResSq <- b_calc_all_ResSq
+aug_all$beta_calc_all_ResSq <- beta_calc_all_ResSq
+
+RMSE_a <- sqrt(mean(a_calc_all_ResSq))
+RMSE_b <- sqrt(mean(b_calc_all_ResSq))
+RMSE_beta <- sqrt(mean(beta_calc_all_ResSq))
+
+RMSE_a
+RMSE_b
+RMSE_beta
 
 #Computing RMSE of calculated composition
 aug_all$Mg_calc = Mg_calc
@@ -194,7 +219,7 @@ mars_aug$mars_a_calc = mars_a_calc
 mars_aug$mars_b_calc = mars_b_calc
 mars_aug$mars_beta_calc = mars_beta_calc
 
-#Computing RMSE of calculated composition
+#Computing RMSE of calculated unit-cell parameters
 mars_a_calc_ResSq <- (mars_a_calc-mars_aug$a)^2
 mars_b_calc_ResSq <- (mars_b_calc-mars_aug$b)^2
 mars_beta_calc_ResSq <- (mars_beta_calc-mars_aug$beta)^2
